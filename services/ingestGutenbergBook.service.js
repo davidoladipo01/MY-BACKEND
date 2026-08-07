@@ -16,11 +16,13 @@ const ingestGutenbergBook = async (book) => {
   console.log("Downloaded:", fileBuffer.length);
   console.log("Uploading to Cloudinary...");
 
-  const uploaded = await uploadBookFile(fileBuffer);
+  const fileType = book.epubUrl ? "epub" : "pdf";
 
+  const uploaded = await uploadBookFile(fileBuffer, fileType);
+  console.log(uploaded);
   console.log("Upload complete");
 
-  const fileType = book.epubUrl ? "epub" : "pdf";
+  
 
   const updatedBook = await Book.findByIdAndUpdate(
     book._id,

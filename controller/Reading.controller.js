@@ -1,5 +1,6 @@
 const uploadBookFile = require("../services/cloudinaryBookUpload");
 const Book = require("../model/Book.model");
+const axios = require("axios");
 
 const uploadReadableBook = async (req, res) => {
   try {
@@ -50,6 +51,49 @@ const uploadReadableBook = async (req, res) => {
   }
 };
 
+const streamBookFile = async (req, res) => {
+  try {
+    const { bookId } = req.params;
+
+    const book = await Book.findById(bookId);
+
+    if (!book || !book.fileUrl) {
+      return res.status(404).json({
+        success: false,
+        message: "Book file not found",
+      });
+    }
+
+    const response = await axios({
+      method: "GET",
+      url: book.fileUrl,
+      responseType: "stream",
+    });
+
+    if (book.fileType === "epub") {
+      res.setHeader(
+        "Content-Type",
+        "application/epub+zip"
+      );
+    } else if (book.fileType === "pdf") {
+      res.setHeader(
+        "Content-Type",
+        "application/pdf"
+      );
+    }
+
+    response.data.pipe(res);
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
 module.exports = {
   uploadReadableBook,
+  streamBookFile,
 };

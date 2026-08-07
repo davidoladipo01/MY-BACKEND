@@ -42,6 +42,7 @@ const importGutenbergBooks = async (query) => {
       Object.entries(formats).find(([key]) =>
         key.startsWith("application/pdf"),
       )?.[1] || "";
+      console.log(book.formats);
 
     return {
       gutenbergId: book.id,
