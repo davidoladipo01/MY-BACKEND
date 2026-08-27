@@ -8,6 +8,26 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const cloudinary = require("cloudinary").v2;
 
+const allowedOrigins = [
+    "http://localhost:5173",
+    "http://localhost:3000",
+    "https://afri-read-co.vercel.app",
+    ...String(process.env.CLIENT_URLS || "")
+        .split(",")
+        .map((origin) => origin.trim())
+        .filter(Boolean),
+    ...(process.env.CLIENT_URL ? [process.env.CLIENT_URL] : []),
+];
+
+const corsOriginHandler = (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+        return;
+    }
+
+    callback(new Error("Not allowed by CORS"));
+};
+
 // Import routes
 const authRoutes = require("./router/auth.routes");
 const onboardRoutes = require("./router/onboarding.routes");
@@ -29,7 +49,7 @@ const server = http.createServer(app);
 // Initialize Socket.IO
 const io = new Server(server, {
     cors: {
-        origin: process.env.CLIENT_URL || 'http://localhost:5173',
+        origin: corsOriginHandler,
         methods: ['GET', 'POST'],
         credentials: true
     }
@@ -42,8 +62,10 @@ app.set('io', io);
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cors({
-    origin: process.env.CLIENT_URL || 'http://localhost:5173',
-    credentials: true
+    origin: corsOriginHandler,
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 
