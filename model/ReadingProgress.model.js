@@ -34,16 +34,17 @@ const ReadingProgressSchema = new mongoose.Schema(
       enum: ["reading", "completed", "paused"],
       default: "reading",
     },
+
+    completedAt: {
+      type: Date,
+      default: null,
+    },
   },
   {
     timestamps: true,
   },
 );
 
-ReadingProgressSchema.index(
-  { user: 1, book: 1 },
-  { unique: true },
-);
-
+ReadingProgressSchema.index({ user: 1, book: 1 }, { unique: true });
 
 module.exports = mongoose.model("ReadingProgress", ReadingProgressSchema);

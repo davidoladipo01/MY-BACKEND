@@ -2,6 +2,13 @@ const uploadBookFile = require("../services/cloudinaryBookUpload");
 const Book = require("../model/Book.model");
 const axios = require("axios");
 
+const buildCoverImageUrl = (title, author) => {
+  const label = [title || "Book", author ? `by ${author}` : ""].filter(Boolean).join(" ");
+  const safeLabel = label.slice(0, 38).trim() || "Book";
+
+  return `https://placehold.co/600x900/0F172A/FFFFFF?text=${encodeURIComponent(safeLabel)}`;
+};
+
 const uploadReadableBook = async (req, res) => {
   try {
     if (!req.file) {
@@ -11,16 +18,20 @@ const uploadReadableBook = async (req, res) => {
       });
     }
 
-    const uploaded = await uploadBookFile(req.file.buffer);
-
-    const { title, author, description } = req.body;
+    const { title, author, description, coverImage } = req.body;
 
     const fileType = req.file.mimetype === "application/pdf" ? "pdf" : "epub";
+
+    const uploaded = await uploadBookFile(req.file.buffer, fileType);
+
+    const finalCoverImage =
+      coverImage || buildCoverImageUrl(title, author);
 
     const book = await Book.create({
       title,
       authors: [author],
       description,
+      coverImage: finalCoverImage,
 
       fileUrl: uploaded.secure_url,
 

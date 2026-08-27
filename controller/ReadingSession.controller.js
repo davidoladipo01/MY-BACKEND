@@ -39,33 +39,24 @@ const startReading = async (req, res) => {
 const updateProgress = async (req, res) => {
   try {
     const { bookId } = req.params;
-
     const { currentPage, epubLocation, percentage } = req.body;
 
+    const update = { currentPage, epubLocation, percentage };
+
+    if (percentage >= 99) {
+      update.status = "completed";
+      update.completedAt = new Date();
+    }
+
     const progress = await ReadingProgress.findOneAndUpdate(
-      {
-        user: req.user.id,
-        book: bookId,
-      },
-      {
-        currentPage,
-        epubLocation,
-        percentage,
-      },
-      {
-        new: true,
-      },
+      { user: req.user.id, book: bookId },
+      update,
+      { new: true },
     );
 
-    res.json({
-      success: true,
-      data: progress,
-    });
+    res.json({ success: true, data: progress });
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
@@ -143,6 +134,28 @@ const addHighlight = async (req, res) => {
   }
 };
 
+const getReadingGoal = async (req, res) => {
+  try {
+    const startOfYear = new Date(new Date().getFullYear(), 0, 1);
+
+    const booksCompleted = await ReadingProgress.countDocuments({
+      user: req.user.id,
+      status: "completed",
+      completedAt: { $gte: startOfYear },
+    });
+
+    res.json({
+      success: true,
+      data: {
+        booksCompleted,
+        goal: req.user.annualReadingGoal || 12,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 // =====Reading Engine=====
 
 const getReadingBook = async (req, res) => {
@@ -207,6 +220,41 @@ const getReadingBook = async (req, res) => {
   }
 };
 
+const searchBooks = async (req, res) => {
+  try {
+    const { q } = req.query;
+
+    if (!q || q.trim() === '') {
+      return res.status(200).json({
+        success: true,
+        books: []
+      });
+    }
+
+    // Search by title or author matching the query string
+    const books = await Book.find({
+      $or: [
+        { title: { $regex: q, $options: 'i' } },
+        { authors: { $regex: q, $options: 'i' } },
+        { author: { $regex: q, $options: 'i' } } // handling both schema formats
+      ]
+    })
+    .select('_id title authors author coverImage fileType')
+    .limit(10);
+
+    return res.status(200).json({
+      success: true,
+      books
+    });
+  } catch (error) {
+    console.error('Search books error:', error);
+    return res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
 module.exports = {
   startReading,
   updateProgress,
@@ -214,4 +262,6 @@ module.exports = {
   addBookmark,
   addHighlight,
   getReadingBook,
+  searchBooks,
+  getReadingGoal,
 };

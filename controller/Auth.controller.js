@@ -123,9 +123,8 @@ const loginUser = async (req, res) => {
 const getCurrentUser = async (req, res) => {
     try {
 
-        const user = await UserModel
-            .findById(req.user)
-            .select("-password");
+    const userId = req.user && (req.user.id || req.user._id) ? (req.user.id || req.user._id) : req.user;
+    const user = await UserModel.findById(userId).select("-password");
 
         if (!user) {
             return res.status(404).json({

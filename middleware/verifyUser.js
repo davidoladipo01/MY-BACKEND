@@ -22,12 +22,14 @@ const token = authHeader.startsWith("Bearer ")
         return res.status(401).send({ message: "Unauthorized user" });
       } else {
         console.log(decoded);
-        req.user = decoded.id;
+        // Attach a user object with both `id` and `_id` to support
+        // handlers that expect either `req.user`, `req.user.id` or `req.user._id`.
+        req.user = { id: decoded.id, _id: decoded.id };
         next();
       }
     });
   } catch (err) {
-    console.error();
+    console.error(err);
   }
 };
 
