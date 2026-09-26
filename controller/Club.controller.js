@@ -1,6 +1,7 @@
 const express = require("express");
 const ClubModel = require("../model/Club.model");
-const { v4: uuidv4 } = require("uuid");
+// const { v4: uuidv4 } = require("uuid");
+const { randomUUID } = require('crypto');
 const ReadingProgressModel = require("../model/ReadingProgress.model");
 const VoteSessionModel = require("../model/VoteSession.model");
 const Vote = require("../model/Vote.model");
@@ -22,7 +23,7 @@ const createClub = async (req, res) => {
     // for public clubs. This avoids inserting `inviteCode: null` which would
     // be indexed by the unique index and cause duplicate key errors.
     if (privacy !== "public") {
-      payload.inviteCode = uuidv4().substring(0, 8).toUpperCase();
+      payload.inviteCode = randomUUID().substring(0, 8).toUpperCase();
     }
 
     const club = await ClubModel.create(payload);
