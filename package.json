@@ -10,6 +10,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@clerk/backend": "^3.20.1",
     "axios": "^1.19.0",
     "bcryptjs": "^3.0.3",
     "cloudinary": "^2.10.0",

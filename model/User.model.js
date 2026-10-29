@@ -32,8 +32,16 @@ const UserSchema = new mongoose.Schema(
 
     password: {
       type: String,
-      required: true,
+      required: function () {
+        return !this.clerkId;
+      },
       select: false,
+    },
+
+    clerkId: {
+      type: String,
+      unique: true,
+      sparse: true,
     },
 
     avatar: {
@@ -92,9 +100,9 @@ const UserSchema = new mongoose.Schema(
   {
     timestamps: true,
     strict: "throw",
-  })
+  },
+);
 
+const UserModel = mongoose.model("User", UserSchema);
 
-const UserModel = mongoose.model("User", UserSchema)
-
-module.exports = UserModel
+module.exports = UserModel;
