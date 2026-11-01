@@ -36,6 +36,8 @@ const BookImportRouter = require("./router/BookImport.route");
 const FeaturedRouter = require("./router/Featured.route");
 const ReadingRouter = require("./router/reading.route");
 const clubRoutes = require("./router/clubRoutes.routes");
+const blogRoutes = require("./router/Blog.routes");
+const settingsRoutes = require("./router/settings.routes");
 
 // Import socket handlers
 const clubSocket = require("./socket/clubSocket");
@@ -77,6 +79,8 @@ app.use("/api/books", BookRouter);
 app.use("/api/featured", FeaturedRouter);
 app.use("/api/reading", ReadingRouter);
 app.use('/api/clubs', clubRoutes);
+app.use("/api/blog", blogRoutes);
+app.use("/api/settings", settingsRoutes);
 
 // Health check endpoint
 app.get('/health', (req, res) => res.json({ 
